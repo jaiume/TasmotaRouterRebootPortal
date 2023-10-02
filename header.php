@@ -29,33 +29,28 @@
 		<script>
 			$(document).ready(function() {
 				function updateServiceStatus() {
-					$.post('manage_service.php', { action: 'status' }, function(data) {
-						let status = data.status;
-						let $serviceButton = $('#serviceButton');
-						let $serviceIcon = $('#serviceIcon');
-						let $serviceText = $('#serviceText');
-						
-						if (status === 'Not Installed') {
-							$serviceIcon.html('<i class="fas fa-ban"></i>');
-							$serviceText.text('Service Not Installed | Generate');
-							$serviceButton.show().off('click').on('click', function() {
-								$.post('manage_service.php', {action: 'generate'}, function(data) {
-									alert(data.message);
-									updateServiceStatus();
-								}, 'json');
-							});
-						} else {
-							$serviceButton.hide();
-							if (status === 'Active') {
-								$serviceIcon.html('<i class="fas fa-lightbulb"></i>');
-								$serviceText.text('Service is Running');
-							} else {
-								$serviceIcon.html('<i class="far fa-lightbulb"></i>');
-								$serviceText.text('Service is Not Running');
-							}
-						}
-					}, 'json');
-				}
+    $.post('manage_service.php', { action: 'status' }, function(data) {
+        let status = data.status;
+        
+        if (status === 'Not Installed') {
+            window.location.href = 'setup.php';
+        } else {
+            let $serviceButton = $('#serviceButton');
+            let $serviceIcon = $('#serviceIcon');
+            let $serviceText = $('#serviceText');
+            $serviceButton.hide();
+            if (status === 'Active') {
+                $serviceIcon.html('<i class="fas fa-lightbulb"></i>');
+                $serviceText.text('Service is Running');
+            } else {
+                $serviceIcon.html('<i class="far fa-lightbulb"></i>');
+                $serviceText.text('Service is Not Running');
+            }
+        }
+    }, 'json');
+}
+
+				
 				
 				updateServiceStatus();
 			});
