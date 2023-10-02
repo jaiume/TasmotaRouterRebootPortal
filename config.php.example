@@ -1,23 +1,19 @@
 <?php
 // Database configuration
 $servername = "localhost";
-$username = "newburyhill_powercycle";
-$password = "Password123#";
-$dbname = "newburyhill_powercycle";
+$username = "Database User Name";
+$password = "Database Password";
+$dbname = "Database Name";
 
 // MQTT configuration
-$mqtt_server = "mqtt.newburyhill.com";
+$mqtt_server = "Your MQTT Server FQDN or IP Address;
 $mqtt_port = 1883;
 $mqtt_client_id = "powercycle.dashboard";
-$mqtt_username = "newburyhill";
-$mqtt_password = "glencoe";
+$mqtt_username = "MQTT Server Username";
+$mqtt_password = "MQTT Server User Password";
 
 // Base URL of your project
 $base_url = "https://powercycle.newburyhill.com";
-
-// Admin credentials
-$admin_username = 'admin';
-$admin_password = 'Password123#';
 
 // Logo filename
 $logo_filename = "NHPLogo.jpg";
