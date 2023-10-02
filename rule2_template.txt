@@ -1,0 +1,1 @@
+on event#PowerCycle do backlog add2 1; power1 0; delay {power_off_duration}; power1 1; var1 0 endon

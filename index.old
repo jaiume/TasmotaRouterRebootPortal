@@ -1,0 +1,84 @@
+<?php
+require_once 'config.php';
+require_once 'db.php';
+require_once 'mqtt.php';
+require_once 'header.php';
+?>
+
+<!-- Render Table with Placeholders -->
+<div class="content-container">
+    <h2>Device Management</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Friendly Name</th>
+                <th>Connectivity Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            $mysqli = db_connect();
+            $result = $mysqli->query("SELECT * FROM devices");
+            
+            while ($row = $result->fetch_assoc()) {
+                echo "<tr id='device-row-{$row['id']}'>";
+                echo "<td>" . htmlspecialchars($row['friendly_name']) . "</td>";
+                echo "<td><span id='status-{$row['id']}'>Checking...</span> <span id='details-{$row['id']}'></span></td>";
+                echo "<td>";
+				echo "<a href='powercycle.php?id={$row['id']}'>Power Cycle</a> | ";
+                echo "<a href='update_configuration.php?id={$row['id']}'>Update Configuration</a> | ";
+                echo "<a href='change_device.php?id={$row['id']}'>Change Device</a>";
+                echo "</td>";
+                echo "</tr>";
+            }
+            $mysqli->close();
+            ?>
+        </tbody>
+    </table>
+</div>
+
+<!-- JavaScript to Update Status -->
+<script>
+    var countdowns = {};
+
+function updateDeviceStatus() {
+    fetch('get_device_status.php')
+        .then(response => response.json())
+        .then(data => {
+            for (let id in data) {
+                let statusElem = document.getElementById('status-' + id);
+                let detailsElem = document.getElementById('details-' + id);
+
+                countdowns[id] = data[id];
+
+                if (countdowns[id] >= 0) {
+                    statusElem.textContent = 'Online';
+                    detailsElem.textContent = ''; // Clear details when online
+                } else {
+                    statusElem.textContent = 'Offline';
+                    let absoluteValue = Math.abs(countdowns[id]);
+                    let timeText = absoluteValue > 60
+                        ? `${Math.floor(absoluteValue / 60)}m ${absoluteValue % 60}s`
+                        : `${absoluteValue}s`;
+                    detailsElem.textContent = `(${'Offline for'} : ${timeText})`; // Add brackets and details when offline
+                }
+            }
+        })
+        .catch(error => console.error('Error fetching device status:', error));
+}
+
+
+// Remove the updateCountdowns function and its setInterval if you only want to update when calling get_device_status.php
+
+// Update device status every 10 seconds
+setInterval(updateDeviceStatus, 10000);
+
+// Initial status update
+updateDeviceStatus();
+
+</script>
+
+
+
+

@@ -1,0 +1,15 @@
+[Unit]
+Description=MQTT Listener Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/php /path/to/your/mqtt_listener.php
+Restart=always
+User=www-data
+Group=www-data
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=mqtt_listener
+
+[Install]
+WantedBy=multi-user.target

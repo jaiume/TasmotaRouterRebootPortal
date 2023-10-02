@@ -1,0 +1,106 @@
+<?php
+require_once 'config.php';
+require_once 'db.php';
+require_once 'mqtt.php';
+require_once 'header.php';
+?>
+
+<div class="content-container">
+    <h2>Device Management</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Friendly Name</th>
+                <th>Connectivity Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            $mysqli = db_connect();
+            $result = $mysqli->query("SELECT * FROM devices");
+            $countdownData = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $labelText = "Next expected contact";
+
+                if ($row['is_initialized'] == 0) {
+                    $status = 'Not Initialized - Please update Configuration';
+                    $expectedContact = 'N/A';
+                } else {
+                    $lastSeen = strtotime($row['last_seen']);
+                    $currentTime = time();
+                    $expectedInterval = $row['ongoing_test_timer'] + $allowance;
+                    $status = ($currentTime - $lastSeen) <= $expectedInterval ? 'Online' : 'Offline';
+                    $expectedContact = ($lastSeen + $row['ongoing_test_timer']) - $currentTime;
+
+                    if($expectedContact < 0) {
+                        $labelText = "Offline for";
+                        $expectedContact = abs($expectedContact);
+                    }
+
+                    if($expectedContact > 60) {
+                        $minutes = floor($expectedContact / 60);
+                        $seconds = $expectedContact % 60;
+                        $expectedContact = "{$minutes}m {$seconds}s";
+                    } else {
+                        $expectedContact .= 's';
+                    }
+
+                    $countdownData[$row['id']] = ($lastSeen + $row['ongoing_test_timer']) - $currentTime;
+                }
+
+                echo "<tr>";
+                echo "<td>" . htmlspecialchars($row['friendly_name']) . "</td>";
+                echo "<td>{$status} (<span id='label-{$row['id']}'>{$labelText}</span> : <span id='countdown-{$row['id']}'>{$expectedContact}</span>)</td>";
+                echo "<td>";
+                echo "<a href='update_configuration.php?id={$row['id']}'>Update Configuration</a> | ";
+                echo "<a href='change_device.php?id={$row['id']}'>Change Device</a>";
+                echo "</td>";
+                echo "</tr>";
+            }
+            $mysqli->close();
+            ?>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    var countdownData = <?php echo json_encode($countdownData); ?>;
+    var reloadTime = 10;
+    var reloadFlag = false;
+
+    function updateCountdown() {
+        for (var id in countdownData) {
+            var countdownElem = document.getElementById('countdown-' + id);
+            var labelElem = document.getElementById('label-' + id);
+            
+            var absoluteValue = Math.abs(countdownData[id]);
+            
+            if (absoluteValue > 60) {
+                var minutes = Math.floor(absoluteValue / 60);
+                var seconds = absoluteValue % 60;
+                countdownElem.textContent = `${minutes}m ${seconds}s`;
+            } else {
+                countdownElem.textContent = absoluteValue + 's';
+            }
+            
+            if (countdownData[id] < -<?php echo $allowance; ?> && !reloadFlag) {
+                reloadFlag = true;
+                setTimeout(function () {
+                    location.reload();
+                }, reloadTime * 1000);
+            }
+            
+            if (countdownData[id] < 0) {
+                labelElem.textContent = 'Offline for';
+            }
+            
+            countdownData[id]--;
+        }
+    }
+
+    setInterval(updateCountdown, 1000);
+</script>
+

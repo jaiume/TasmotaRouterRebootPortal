@@ -1,0 +1,2 @@
+on Power1#Boot do backlog status 7; ruletimer3 30 endon
+on Rules#Timer=3 do backlog status 7; ruletimer3 30 endon

@@ -1,0 +1,6 @@
+on Power1#Boot do backlog var1 0; var2 0; power1 1; ruletimer1 {boot_up_timer} endon
+on Rules#Timer=1 do backlog WebQuery http://google.com GET endon
+on WebQuery#Data=Done do backlog var1 0; var2 0; ruletimer1 {ongoing_test_timer} endon 
+on WebQuery#Data=Connect failed do backlog add1 1; event checkFailure=%var1%; ruletimer1 {failure_test_timer} endon 
+on event#checkFailure>={failure_threshold} do backlog event checkCycles=%var2% endon 
+on event#checkCycles<{power_cycle_count} do backlog power1 0; delay {power_off_duration}; power1 1; var1 0; add2 1; ruletimer1 {boot_up_timer} endon
