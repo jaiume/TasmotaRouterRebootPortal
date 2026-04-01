@@ -2,6 +2,7 @@
 	require_once 'config.php';
 	require_once 'db.php';
 	require_once 'mqtt.php';
+	require_once 'ieee_oui.php';
 	require_once 'header.php';
 ?>
 
@@ -30,13 +31,37 @@
             <?php
 				$mysqli = db_connect();
 				$result = $mysqli->query("SELECT * FROM devices");
-				
+				$rows = [];
 				while ($row = $result->fetch_assoc()) {
+					$rows[] = $row;
+				}
+				$result->free();
+				$vendorByOui = [];
+				if (!empty($ieee_oui_enabled)) {
+					foreach ($rows as $row) {
+						$ap = $row['ap_bssid'] ?? '';
+						if ($ap === '') {
+							continue;
+						}
+						$oui = mac_to_oui($ap);
+						if (!isset($vendorByOui[$oui])) {
+							$vendorByOui[$oui] = resolve_vendor_for_oui($oui);
+						}
+					}
+				}
+				foreach ($rows as $row) {
 					echo "<tr id='device-row-{$row['id']}'>";
 					echo "<td>" . htmlspecialchars($row['friendly_name']) . "</td>";
 					$lan_ip = $row['lan_ip'] ?? '';
 					$lan_display = ($lan_ip !== '') ? htmlspecialchars($lan_ip) : '—';
-					echo "<td>{$lan_display}</td>";
+					$vendorLine = '';
+					if (!empty($ieee_oui_enabled) && !empty($row['ap_bssid'])) {
+						$v = $vendorByOui[mac_to_oui($row['ap_bssid'])] ?? null;
+						if ($v !== null && $v !== '') {
+							$vendorLine = '<br><small class="ap-vendor-meta">' . htmlspecialchars($v) . '</small>';
+						}
+					}
+					echo "<td>{$lan_display}{$vendorLine}</td>";
 					if ($row['is_initialized'] == 0) {
 						echo "<td>Not Initialized</td>";
 						echo "<td>";

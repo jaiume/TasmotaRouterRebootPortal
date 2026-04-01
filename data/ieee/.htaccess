@@ -1,0 +1,4 @@
+# Deny HTTP access to IEEE CSV cache (Apache 2.4+)
+<IfModule mod_authz_core.c>
+	Require all denied
+</IfModule>

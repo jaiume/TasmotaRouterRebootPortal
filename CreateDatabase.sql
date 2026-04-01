@@ -3,6 +3,10 @@
 --
 -- Existing databases: ALTER TABLE devices ADD COLUMN lan_ip varchar(45) DEFAULT NULL;
 -- (MariaDB 10.3.3+: ADD COLUMN IF NOT EXISTS lan_ip varchar(45) DEFAULT NULL)
+--
+-- ap_bssid + OUI vendor cache (IEEE file + lazy DB rows):
+-- ALTER TABLE devices ADD COLUMN ap_bssid varchar(17) DEFAULT NULL;
+-- CREATE TABLE oui_vendor_cache (...);  -- see full DDL below
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -31,6 +35,7 @@ CREATE TABLE `devices` (
   `is_initialized` tinyint(1) NOT NULL DEFAULT 0,
   `last_state` varchar(10) DEFAULT NULL,
   `lan_ip` varchar(45) DEFAULT NULL,
+  `ap_bssid` varchar(17) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `mqtt_device_name` (`mqtt_device_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -50,6 +55,19 @@ CREATE TABLE `device_logs` (
   PRIMARY KEY (`id`),
   KEY `device_id` (`device_id`),
   CONSTRAINT `device_logs_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Lazy cache: one row per OUI resolved against IEEE MA-L CSV (see ieee_oui.php)
+--
+
+CREATE TABLE `oui_vendor_cache` (
+  `oui` char(6) NOT NULL,
+  `vendor` varchar(255) DEFAULT NULL,
+  `resolved_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`oui`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 COMMIT;

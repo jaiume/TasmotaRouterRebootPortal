@@ -3,6 +3,7 @@
 	require_once 'mqtt.php';
 	require_once 'db.php';
 	require_once 'functions.php';
+	require_once 'ieee_oui.php';
 	
 	$mqtt = mqtt_connect();
 	
@@ -85,6 +86,13 @@
 					if ($ip !== null && $ip !== '') {
 						update_device_lan_ip($device_id, $ip);
 					}
+					$bssidRaw = ieee_extract_bssid_from_decoded($decoded);
+					if ($bssidRaw !== null) {
+						$mac = normalize_ap_mac($bssidRaw);
+						if ($mac !== null && update_device_ap_bssid_if_changed($device_id, $mac)) {
+							resolve_vendor_for_oui(mac_to_oui($mac));
+						}
+					}
 				}
 			}
 		}
@@ -105,6 +113,13 @@
 					$ip = $decoded['StatusNET']['IPAddress'] ?? null;
 					if ($ip !== null && $ip !== '') {
 						update_device_lan_ip($device_id, $ip);
+					}
+					$bssidRaw = ieee_extract_bssid_from_decoded($decoded);
+					if ($bssidRaw !== null) {
+						$mac = normalize_ap_mac($bssidRaw);
+						if ($mac !== null && update_device_ap_bssid_if_changed($device_id, $mac)) {
+							resolve_vendor_for_oui(mac_to_oui($mac));
+						}
 					}
 				}
 			}

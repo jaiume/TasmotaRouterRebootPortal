@@ -6,7 +6,7 @@ $password = "Database Password";
 $dbname = "Database Name";
 
 // MQTT configuration
-$mqtt_server = "Your MQTT Server FQDN or IP Address;
+$mqtt_server = "Your MQTT Server FQDN or IP Address";
 $mqtt_port = 1883;
 $mqtt_client_id = "powercycle.dashboard";
 $mqtt_username = "MQTT Server Username";
@@ -35,6 +35,14 @@ $DEFAULT_FAILURE_TEST_TIMER = 60;
 $DEFAULT_FAILURE_THRESHOLD = 4;
 $DEFAULT_POWER_OFF_DURATION = 200; // Specified in 10ths of a second
 $DEFAULT_POWER_CYCLE_COUNT = 4;
+
+// IEEE MA-L OUI vendor lookup (oui.csv on disk + lazy oui_vendor_cache; block /data/ in web server)
+$ieee_oui_enabled = true;
+$ieee_oui_data_dir = __DIR__ . '/data/ieee';
+$ieee_oui_max_age_seconds = 604800;
+$ieee_oui_csv_url = 'http://standards-oui.ieee.org/oui/oui.csv';
+$ieee_oui_download_timeout_seconds = 30;
+$ieee_oui_csv_filename = 'oui.csv';
 
 //Tasmota Rule Templates
 $rule1_template="rule1_template.txt";

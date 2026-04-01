@@ -63,6 +63,31 @@ function insert_device_log_using_mqtt_name($mqtt_device_name, $event_type, $deta
 }
 
 
+function update_device_ap_bssid_if_changed($device_id, $canonical_mac) {
+    $mysqli = db_connect();
+    $stmt = $mysqli->prepare('SELECT ap_bssid FROM devices WHERE id = ?');
+    $stmt->bind_param('i', $device_id);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $row = $res ? $res->fetch_assoc() : null;
+    $stmt->close();
+    if ($row !== null && ($row['ap_bssid'] ?? null) === $canonical_mac) {
+        $mysqli->close();
+        return false;
+    }
+    $stmt = $mysqli->prepare('UPDATE devices SET ap_bssid = ? WHERE id = ?');
+    $stmt->bind_param('si', $canonical_mac, $device_id);
+    if (!$stmt->execute()) {
+        error_log('Failed to update ap_bssid for device ID: ' . $device_id . '. Error: ' . $stmt->error);
+        $stmt->close();
+        $mysqli->close();
+        return false;
+    }
+    $stmt->close();
+    $mysqli->close();
+    return true;
+}
+
 function update_device_lan_ip($device_id, $ip) {
     if ($ip === null || $ip === '') {
         return;
