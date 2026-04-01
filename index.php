@@ -70,6 +70,8 @@
                 let statusElem = document.getElementById('status-' + id);
                 let detailsElem = document.getElementById('details-' + id);
 				
+				if (!statusElem || !detailsElem) continue;
+				
                 countdowns[id] = data[id];
 				
                 if (countdowns[id] >= 0) {

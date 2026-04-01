@@ -4,7 +4,7 @@ header('Content-Type: application/json');
 require_once 'db.php';
 
 $mysqli = db_connect();
-$result = $mysqli->query("SELECT id, last_seen, ongoing_test_timer FROM devices");
+$result = $mysqli->query("SELECT id, last_seen, ongoing_test_timer FROM devices WHERE is_initialized = 1");
 
 $data = [];
 while ($row = $result->fetch_assoc()) {
