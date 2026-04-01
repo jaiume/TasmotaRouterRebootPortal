@@ -45,7 +45,8 @@
 						echo "<a href='powercycle.php?id={$row['id']}'>Power Cycle</a> | ";
 						echo "<a href='update_configuration.php?id={$row['id']}'>Update Configuration</a> | ";
 						echo "<a href='change_device.php?id={$row['id']}'>Change Device</a> | ";
-						echo "<a href='view_logs.php?id={$row['id']}'>View Logs</a> | "; // View Logs Action
+						echo "<a href='view_logs.php?id={$row['id']}&timezone=" . urlencode(date_default_timezone_get()) . "'>View Logs</a> | ";
+
 						echo "<a href='#' onclick='confirmDelete({$row['id']})'>Delete</a>"; // Delete Action
 						echo "</td>";
 					}
@@ -96,6 +97,19 @@
         window.location.href = 'delete_device.php?id=' + deviceId;
     }
 }
+
+
+$(document).ready(function() {
+    var timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    // Update the links to view_logs.php with the timezone parameter
+    $('a[href^="view_logs.php"]').each(function() {
+        var href = $(this).attr('href');
+        href += '&timezone=' + encodeURIComponent(timezone);
+        $(this).attr('href', href);
+    });
+});
+
 	
 	
 	// Remove the updateCountdowns function and its setInterval if you only want to update when calling get_device_status.php

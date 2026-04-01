@@ -46,21 +46,11 @@ $result = $stmt->get_result();
 $logs = $result->fetch_all(MYSQLI_ASSOC);
 
 $stmt->close();
-
-// Adjust the logs' timestamps based on the provided timezone
-$timezone = $_GET['timezone'] ?? date_default_timezone_get(); // Default to server timezone if not provided
-
-foreach ($logs as &$log) {
-    $datetime = new DateTime($log['event_timestamp']);
-    $datetime->setTimezone(new DateTimeZone($timezone));
-    $log['event_timestamp'] = $datetime->format('Y-m-d H:i:s');
-}
-unset($log); // Unset reference
-
 $mysqli->close();
 ?>
 
 <meta http-equiv="refresh" content="60">
+
 
 <div class="content-container">
     <h2>Logs for <?php echo htmlspecialchars($friendly_name); ?></h2>
@@ -75,7 +65,7 @@ $mysqli->close();
     <table>
         <thead>
         <tr>
-            <th>Timestamp (<?php echo htmlspecialchars($timezone); ?>)</th>
+            <th>Timestamp</th>
             <th>Event Type</th>
             <th>Details</th>
         </tr>
@@ -84,7 +74,7 @@ $mysqli->close();
         <?php
 foreach ($logs as $log) {
     echo "<tr>";
-    echo "<td>" . htmlspecialchars($log['event_timestamp']) . "</td>";
+    echo "<td class='utc-date'>" . htmlspecialchars($log['event_timestamp']) . "</td>";
     echo "<td>" . htmlspecialchars($log['event_type']) . "</td>";
     echo "<td>" . htmlspecialchars($log['details']) . "</td>";
     echo "</tr>";
@@ -93,3 +83,17 @@ foreach ($logs as $log) {
         </tbody>
     </table>
 </div>
+<script>
+$(document).ready(function() {
+    $(".utc-date").each(function() {
+        // Get the UTC date from the cell
+        var utcDate = new Date($(this).text() + " UTC");
+        
+        // Convert it to the local timezone
+        var localDateStr = utcDate.toLocaleString();
+        
+        // Update the cell with the local date
+        $(this).text(localDateStr);
+    });
+});
+</script>

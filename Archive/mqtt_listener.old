@@ -8,59 +8,14 @@
 	
 	// Subscribe to the topics where devices report their status
 	$topics['stat/+/RESULT'] = array("qos" => 0, "function" => "procmsg");
-	$topics['tele/+/LWT'] = array("qos" => 0, "function" => "proclwt");
+	$topics['tele/+/LWT'] = array("qos" => 0, "function" => "proclwt"); // Subscribing to the new topic
 	$topics['tele/+/STATE'] = array("qos" => 0, "function" => "procstate");
 	$topics['stat/+/STATUS7'] = array("qos" => 0, "function" => "procstatus7");
 	$mqtt->subscribe($topics, 0);
 	
-	$nextCheckTime = time() + ($heartbeat*2);
-	
 	while ($mqtt->proc()) {
-		// Check the device status every 30 seconds
-		if (time() >= $nextCheckTime) { 
-			checkDevicesStatus($allowance);
-			$nextCheckTime = time() + ($heartbeat*2);
-		}
+		// The proc function will loop indefinitely, processing MQTT messages as they are received.
 	}
-	
-	function checkDevicesStatus($allowance) {
-		global $timezone;
-		
-		date_default_timezone_set($timezone);
-		$currentTimestamp = new DateTime();
-		
-		$mysqli = db_connect();
-		$query = "SELECT id, mqtt_device_name, last_seen, last_state, IF(TIMESTAMPDIFF(SECOND, last_seen, CURRENT_TIMESTAMP) <= ongoing_test_timer + ?, 'online', 'offline') AS current_status FROM devices";
-		$stmt = $mysqli->prepare($query);
-		$stmt->bind_param("i", $allowance);
-		
-		if ($stmt->execute()) {
-			$result = $stmt->get_result();
-			while ($row = $result->fetch_assoc()) {
-				$previousStatus = $row['last_state'];
-				$currentStatus = $row['current_status'];
-				//echo "Current Status =" . $currentStatus . " | Laste State =" . $previousStatus . "\n";
-				
-				if ($previousStatus !== $currentStatus) {
-					// Update the last_state in the database
-					$updateStmt = $mysqli->prepare("UPDATE devices SET last_state = ? WHERE id = ?");
-					$updateStmt->bind_param("si", $currentStatus, $row['id']);
-					$updateStmt->execute();
-					$updateStmt->close();
-					
-					// Log the status change
-					$logMessage = ($currentStatus === 'online') ? 'The device has come online based on received heart beat messages.' : 'The device has gone offline based on received heart beat messages.';
-					insert_device_log($row['id'], '(Heart Beat)Device ' . ucfirst($currentStatus), $logMessage);
-				}
-			}
-			$result->close();
-		}
-		
-		$stmt->close();
-		$mysqli->close();
-	}
-	
-	
 	
 	function procstate($topic, $msg) {
 		// Extract device name from the topic
@@ -137,19 +92,20 @@
 			
 			
 			if($device_id !== null) {
-				// Process LWT message
-				if($msg === 'Online') {
-					// Handle when the device is Online
-					// Log this event
-					insert_device_log($device_id, '(MQTT) Device Online', 'The device has come online based on the MQTT Server Status.');
-					} elseif($msg === 'Offline') {
-					// Handle when the device is Offline
-					// Log this event
-					insert_device_log($device_id, '(MQTT) Device Offline', 'The device has gone offline based on the MQTT Server Status.');
-				}
+			// Process LWT message
+			if($msg === 'Online') {
+			// Handle when the device is Online
+			// Log this event
+			insert_device_log($device_id, 'Device Online', 'The device has come online.');
+			} elseif($msg === 'Offline') {
+			// Handle when the device is Offline
+			// Log this event
+			insert_device_log($device_id, 'Device Offline', 'The device has gone offline.');
 			}
-		}
-	}
-	
-	$mqtt->close();
-?>
+			}
+			}
+			}
+			
+			$mqtt->close();
+			?>
+						

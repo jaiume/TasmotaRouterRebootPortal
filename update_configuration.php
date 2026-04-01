@@ -92,7 +92,7 @@ function update_device_configuration($mysqli, $postData) {
 
 
 function publish_configuration_to_device($device_id, $postData) {
-    global $rule1_template, $rule2_template, $rule3_template;
+    global $rule1_template, $rule2_template, $rule3_template, $heartbeat;
     $device = fetch_device_by_id($device_id);
     $mqtt_device_name = $device['mqtt_device_name'];
     
@@ -111,7 +111,12 @@ function publish_configuration_to_device($device_id, $postData) {
     // Replace the placeholder in the loaded rule2 template
     $rule2 = str_replace('{power_off_duration}', $postData['power_off_duration']*10, $rule2_template_content);
 	
-	$rule3 = $rule3_template_content;
+
+	$rule3 = str_replace('{heartbeat}', $heartbeat, $rule3_template_content);
+
+	
+	
+	
     
     // Publish the rules via MQTT to the device
     mqtt_publish("cmnd/{$mqtt_device_name}/rule1", $rule1);
@@ -171,6 +176,11 @@ $rule3_template_content = file_get_contents($rule3_template); // assuming $rule2
             <label for="power_cycle_count">Power Cycle Count:</label>
             <input type="number" name="power_cycle_count" value="<?php echo $device['power_cycle_count']; ?>" required>
         </div>
+		
+		<div class="form-group">
+
+    <input type="hidden" name="heartbeat" value="<?php echo $heartbeat; ?>" required>
+</div>	
 
         <button type="submit">Update Configuration<br> (Will Push New Rules to Device and Reboot Tasmota)</button>
     </form>
@@ -194,7 +204,7 @@ $rule3_template_content = file_get_contents($rule3_template); // assuming $rule2
 <script>
     var rule1Template = <?php echo json_encode($rule1_template_content); ?>;
     var rule2Template = <?php echo json_encode($rule2_template_content); ?>;
-	var rule3 = <?php echo json_encode($rule3_template_content); ?>;
+	var rule3Template = <?php echo json_encode($rule3_template_content); ?>;
     
     function updateRulePreview() {
     var form = document.getElementById('configForm');
@@ -205,6 +215,7 @@ $rule3_template_content = file_get_contents($rule3_template); // assuming $rule2
     var failure_threshold = form.elements['failure_threshold'].value;
     var power_off_duration = form.elements['power_off_duration'].value * 10;
     var power_cycle_count = form.elements['power_cycle_count'].value;
+	var heartbeat = form.elements['heartbeat'].value;
     
     var rule1 = rule1Template
         .split('{boot_up_timer}').join(boot_up_timer)
@@ -215,6 +226,8 @@ $rule3_template_content = file_get_contents($rule3_template); // assuming $rule2
         .split('{power_cycle_count}').join(power_cycle_count);
     
     var rule2 = rule2Template.split('{power_off_duration}').join(power_off_duration);
+	
+	var rule3 = rule3Template.split('{heartbeat}').join(heartbeat);
     
     document.getElementById('rule1Preview').textContent = rule1;
     document.getElementById('rule2Preview').textContent = rule2;

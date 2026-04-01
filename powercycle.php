@@ -2,6 +2,7 @@
 require_once 'config.php';
 require_once 'db.php';
 require_once 'mqtt.php'; // Assuming you have a mqtt.php for MQTT related functions
+require_once 'functions.php';
 
 $device_id = $_GET['id'] ?? null;
 
@@ -21,6 +22,11 @@ if ($device_id) {
             $topic = "cmnd/{$mqtt_device_name}/event";
             $payload = "PowerCycle";
             mqtt_publish($topic, $payload); // Assuming you have a function mqtt_publish to publish MQTT messages
+			
+			// Insert log entry for power cycle event
+            $event_type = "PowerCycle";
+            $details = "Device was power cycled via the dashboard";
+            insert_device_log($device_id, $event_type, $details);
         }
     }
     $stmt->close();
