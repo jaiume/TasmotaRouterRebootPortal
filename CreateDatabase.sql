@@ -1,5 +1,8 @@
 -- Schema for JamieDev_powercycle (MariaDB/MySQL)
 -- Synced from live development database, 2026-04-01
+--
+-- Existing databases: ALTER TABLE devices ADD COLUMN lan_ip varchar(45) DEFAULT NULL;
+-- (MariaDB 10.3.3+: ADD COLUMN IF NOT EXISTS lan_ip varchar(45) DEFAULT NULL)
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -27,6 +30,7 @@ CREATE TABLE `devices` (
   `power_cycle_count` int(11) DEFAULT NULL,
   `is_initialized` tinyint(1) NOT NULL DEFAULT 0,
   `last_state` varchar(10) DEFAULT NULL,
+  `lan_ip` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `mqtt_device_name` (`mqtt_device_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

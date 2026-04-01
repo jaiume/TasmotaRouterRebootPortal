@@ -21,6 +21,7 @@
         <thead>
             <tr>
                 <th>Friendly Name</th>
+                <th>LAN IP</th>
                 <th>Connectivity Status</th>
                 <th>Actions</th>
 			</tr>
@@ -33,6 +34,9 @@
 				while ($row = $result->fetch_assoc()) {
 					echo "<tr id='device-row-{$row['id']}'>";
 					echo "<td>" . htmlspecialchars($row['friendly_name']) . "</td>";
+					$lan_ip = $row['lan_ip'] ?? '';
+					$lan_display = ($lan_ip !== '') ? htmlspecialchars($lan_ip) : '—';
+					echo "<td>{$lan_display}</td>";
 					if ($row['is_initialized'] == 0) {
 						echo "<td>Not Initialized</td>";
 						echo "<td>";

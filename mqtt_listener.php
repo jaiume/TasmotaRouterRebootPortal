@@ -10,6 +10,7 @@
 	$topics['stat/+/RESULT'] = array("qos" => 0, "function" => "procmsg");
 	$topics['tele/+/LWT'] = array("qos" => 0, "function" => "proclwt");
 	$topics['tele/+/STATE'] = array("qos" => 0, "function" => "procstate");
+	$topics['stat/+/STATUS5'] = array("qos" => 0, "function" => "procstatus5");
 	$topics['stat/+/STATUS7'] = array("qos" => 0, "function" => "procstatus7");
 	$mqtt->subscribe($topics, 0);
 	
@@ -74,6 +75,38 @@
 				// This is a new device, insert it into the database
 				insert_new_device($mqtt_device_name);
 				insert_device_log_using_mqtt_name($mqtt_device_name, 'New device discovered', 'A new device was discovered with MQTT name: ' . $mqtt_device_name);
+				$device_id = get_device_id_by_mqtt_name($mqtt_device_name);
+			}
+			
+			if ($device_id !== null) {
+				$decoded = json_decode($msg, true);
+				if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+					$ip = $decoded['IPAddress'] ?? null;
+					if ($ip !== null && $ip !== '') {
+						update_device_lan_ip($device_id, $ip);
+					}
+				}
+			}
+		}
+	}
+	
+	
+	function procstatus5($topic, $msg) {
+		preg_match('/stat\/(.+?)\/STATUS5/', $topic, $matches);
+		$mqtt_device_name = $matches[1] ?? null;
+		
+		if ($mqtt_device_name) {
+			$device_id = get_device_id_by_mqtt_name($mqtt_device_name);
+			
+			if ($device_id !== null) {
+				update_last_seen($device_id);
+				$decoded = json_decode($msg, true);
+				if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+					$ip = $decoded['StatusNET']['IPAddress'] ?? null;
+					if ($ip !== null && $ip !== '') {
+						update_device_lan_ip($device_id, $ip);
+					}
+				}
 			}
 		}
 	}

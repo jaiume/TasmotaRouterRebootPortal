@@ -63,6 +63,22 @@ function insert_device_log_using_mqtt_name($mqtt_device_name, $event_type, $deta
 }
 
 
+function update_device_lan_ip($device_id, $ip) {
+    if ($ip === null || $ip === '') {
+        return;
+    }
+    if (!filter_var($ip, FILTER_VALIDATE_IP)) {
+        return;
+    }
+    $mysqli = db_connect();
+    $stmt = $mysqli->prepare("UPDATE devices SET lan_ip = ? WHERE id = ?");
+    $stmt->bind_param("si", $ip, $device_id);
+    if (!$stmt->execute()) {
+        error_log("Failed to update lan_ip for device ID: $device_id. Error: " . $stmt->error);
+    }
+    $stmt->close();
+}
+
 // New function to update the last_seen timestamp
 function update_last_seen($device_id) {
     $mysqli = db_connect();
