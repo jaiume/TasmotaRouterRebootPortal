@@ -36,13 +36,17 @@ $DEFAULT_FAILURE_THRESHOLD = 4;
 $DEFAULT_POWER_OFF_DURATION = 200; // Specified in 10ths of a second
 $DEFAULT_POWER_CYCLE_COUNT = 4;
 
-// IEEE MA-L OUI vendor lookup (oui.csv on disk + lazy oui_vendor_cache; block /data/ in web server)
+// IEEE OUI vendor lookup (MA-L oui.csv + MA-M mam.csv + MA-S oui36.csv; lazy oui_vendor_cache; block /data/ in web server)
 $ieee_oui_enabled = true;
 $ieee_oui_data_dir = __DIR__ . '/data/ieee';
 $ieee_oui_max_age_seconds = 604800;
 $ieee_oui_csv_url = 'http://standards-oui.ieee.org/oui/oui.csv';
+$ieee_oui_mam_csv_url = 'http://standards-oui.ieee.org/oui28/mam.csv';
+$ieee_oui_mas_csv_url = 'http://standards-oui.ieee.org/oui36/oui36.csv';
 $ieee_oui_download_timeout_seconds = 30;
 $ieee_oui_csv_filename = 'oui.csv';
+$ieee_oui_mam_csv_filename = 'mam.csv';
+$ieee_oui_mas_csv_filename = 'oui36.csv';
 
 //Tasmota Rule Templates
 $rule1_template="rule1_template.txt";

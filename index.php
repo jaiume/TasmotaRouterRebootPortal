@@ -43,9 +43,13 @@
 						if ($ap === '') {
 							continue;
 						}
-						$oui = mac_to_oui($ap);
+						$normAp = normalize_ap_mac($ap);
+						if ($normAp === null) {
+							continue;
+						}
+						$oui = mac_to_oui($normAp);
 						if (!isset($vendorByOui[$oui])) {
-							$vendorByOui[$oui] = resolve_vendor_for_oui($oui);
+							$vendorByOui[$oui] = resolve_vendor_for_ap_mac($normAp);
 						}
 					}
 				}
@@ -56,7 +60,8 @@
 					$lan_display = ($lan_ip !== '') ? htmlspecialchars($lan_ip) : '—';
 					$vendorLine = '';
 					if (!empty($ieee_oui_enabled) && !empty($row['ap_bssid'])) {
-						$v = $vendorByOui[mac_to_oui($row['ap_bssid'])] ?? null;
+						$normBssid = normalize_ap_mac($row['ap_bssid']);
+						$v = ($normBssid !== null) ? ($vendorByOui[mac_to_oui($normBssid)] ?? null) : null;
 						if ($v !== null && $v !== '') {
 							$vendorLine = '<br><small class="ap-vendor-meta">' . htmlspecialchars($v) . '</small>';
 						}

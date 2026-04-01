@@ -90,7 +90,7 @@
 					if ($bssidRaw !== null) {
 						$mac = normalize_ap_mac($bssidRaw);
 						if ($mac !== null && update_device_ap_bssid_if_changed($device_id, $mac)) {
-							resolve_vendor_for_oui(mac_to_oui($mac));
+							resolve_vendor_for_ap_mac($mac);
 						}
 					}
 				}
@@ -118,7 +118,7 @@
 					if ($bssidRaw !== null) {
 						$mac = normalize_ap_mac($bssidRaw);
 						if ($mac !== null && update_device_ap_bssid_if_changed($device_id, $mac)) {
-							resolve_vendor_for_oui(mac_to_oui($mac));
+							resolve_vendor_for_ap_mac($mac);
 						}
 					}
 				}
